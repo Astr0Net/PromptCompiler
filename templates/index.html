@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مترجم پرامپت — Prompt Engine</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="app-shell">
+
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-logo">⌘</div>
+                <div class="brand-text">
+                    <h1>Prompt Engine</h1>
+                    <span class="brand-sub">Persian → English Prompt Compiler</span>
+                </div>
+            </div>
+            <div class="topbar-meta">
+                <span class="live-pill"><span class="live-dot"></span> Google AI Studio</span>
+                <span class="model-pill" id="active-model">—</span>
+                <button id="toggle-sidebar" class="btn btn-ghost btn-small usage-trigger" aria-expanded="false" aria-controls="usage-sidebar">
+                    <span class="usage-trigger-title">مصرف توکن</span>
+                    <span id="usage-header-summary" class="usage-header-summary" aria-live="polite">
+                        <span class="usage-header-total">— توکن</span>
+                        <span class="usage-header-separator">·</span>
+                        <span class="usage-header-requests">— درخواست</span>
+                    </span>
+                    <span class="usage-trigger-icon" aria-hidden="true">⌄</span>
+                </button>
+                <button id="manage-settings" class="btn btn-ghost btn-small">تنظیمات</button>
+            </div>
+        </header>
+
+        <div class="workspace">
+            <main class="main-col">
+
+                <section class="card input-card">
+                    <div class="card-head">
+                        <span class="section-label">پرامپت فارسی شما</span>
+                        <div class="card-actions">
+                            <select id="model-select" class="model-select" title="انتخاب مدل"></select>
+                            <button id="translate-btn" class="btn btn-primary btn-sm">تبدیل کن</button>
+                        </div>
+                    </div>
+                    <textarea id="persian-prompt" class="textarea" placeholder="مثلاً: یه وب‌سایت فروشگاهی با گتگستای بساز که قیمت محصولات رو نشون بده..."></textarea>
+                </section>
+
+                <section id="output-section" class="card output-card">
+                    <div class="card-head">
+                        <span class="section-label">نتیجه</span>
+                        <div class="result-badges">
+                            <span id="category-badge" class="cat-badge"></span>
+                            <span id="subcategory-badge" class="subcat-badge hidden"></span>
+                        </div>
+                    </div>
+                    <div id="purpose" class="purpose"></div>
+
+                    <div class="result-boxes">
+                        <div class="result-box">
+                            <div class="result-box-head">
+                                <span class="result-box-label">پرامپت فارسی</span>
+                                <button id="copy-persian-btn" class="btn btn-ghost btn-small">⧉ کپی فارسی</button>
+                            </div>
+                            <pre id="output-persian" class="output output-persian"></pre>
+                        </div>
+                        <div class="result-box">
+                            <div class="result-box-head">
+                                <span class="result-box-label">پرامپت انگلیسی</span>
+                                <button id="copy-btn" class="btn btn-ghost btn-small">⧉ کپی انگلیسی</button>
+                            </div>
+                            <pre id="output" class="output output-english"></pre>
+                        </div>
+                    </div>
+
+                    <div class="analysis-grid">
+                        <div class="analysis-card">
+                            <div class="analysis-card-head">الزامات حفظ‌شده</div>
+                            <div id="requirements-list" class="analysis-card-body" dir="ltr"></div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-card-head">فرض‌ها</div>
+                            <div id="assumptions-list" class="analysis-card-body" dir="ltr"></div>
+                        </div>
+                        <div class="analysis-card">
+                            <div class="analysis-card-head">اطلاعات ازدست‌رفته</div>
+                            <div id="missing-list" class="analysis-card-body" dir="ltr"></div>
+                        </div>
+                        <div class="analysis-card analysis-card-wide">
+                            <div class="analysis-card-head">پیشنهادها</div>
+                            <div id="suggestions-list" class="analysis-card-body" dir="ltr"></div>
+                        </div>
+                    </div>
+
+                    <div class="output-actions">
+                        <button id="use-in-claude" class="btn btn-ghost">استفاده در Claude Code</button>
+                        <button id="use-in-opencode" class="btn btn-ghost">استفاده در OpenCode</button>
+                    </div>
+                </section>
+
+            </main>
+
+            <aside class="usage-sidebar" id="usage-sidebar">
+                <div class="usage-sidebar-header">
+                    <h3><span class="dot"></span> مصرف توکن</h3>
+                    <button id="close-sidebar" class="btn-close" title="بستن">&times;</button>
+                </div>
+                <div id="usage-content" class="usage-content">
+                    <div class="usage-loading">در حال بارگذاری...</div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <div id="settings-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>تنظیمات</h2>
+                <button id="close-modal" class="btn-close">&times;</button>
+            </div>
+            <form id="settings-form">
+                <div class="provider-section" id="gemini-section">
+                    <h4>Google AI Studio (Gemini)</h4>
+                    <p class="note">فقط مدل‌های گوگل استودیو پشتیبانی می‌شوند. کلید API را از <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a> بگیر.</p>
+                    <div class="form-group">
+                        <label>API Key</label>
+                        <input type="password" name="gemini_api_key" value="{{ config.gemini_api_key }}" placeholder="AIza...">
+                    </div>
+                    <div class="form-group">
+                        <label>مدل پیش‌فرض</label>
+                        <select name="gemini_model">
+                            <optgroup label="مدل‌های قابل استفاده (Text — generateContent)">
+                                {% for m in model_options.values() | sum(start=[]) if m.generate %}
+                                <option value="{{ m.id }}" {% if config.gemini_model == m.id %}selected{% endif %}>{{ m.name }}</option>
+                                {% endfor %}
+                            </optgroup>
+                            <optgroup label="سایر مدل‌ها (غیرقابل استفاده)">
+                                {% for m in model_options.values() | sum(start=[]) if not m.generate %}
+                                <option value="{{ m.id }}" disabled>{{ m.name }}</option>
+                                {% endfor %}
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>سیستم پرامپت اختصاصی (اختیاری)</label>
+                    <textarea name="system_prompt_override" rows="4" placeholder="در صورت تمایل پرامپت سیستم خودت رو وارد کن. خالی بذاری یعنی از حالت پیش‌فرض استفاده شود.">{{ config.system_prompt_override }}</textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-full">ذخیره تنظیمات</button>
+                <div id="save-status" class="save-status"></div>
+            </form>
+        </div>
+    </div>
+
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+    <div id="toast" class="toast"></div>
+
+    <script>window.DEFAULT_MODEL = "{{ config.gemini_model }}";</script>
+    <script src="/static/script.js"></script>
+</body>
+</html>
